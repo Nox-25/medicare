@@ -13,6 +13,8 @@ import ProtectedRoute from "./auth/ProtectedRoute";
 import { AppointmentsPage, HistoryPage, ProfilePage, DocumentsPage, ContactPage } from "./pages/PatientPages";
 import DoctorDashboard from "./pages/DoctorDashboard";
 import HospitalDashboard from "./pages/HospitalDashboard";
+import DiseaseAnalysis from "./pages/DiseaseAnalysis";
+import SupabaseTestPage from "./pages/SupabaseTestPage";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +34,8 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               {/* Patient-focused routes */}
               <Route path="/appointments" element={<AppointmentsPage />} />
+              <Route path="/disease-analysis" element={<DiseaseAnalysis />} />
+              <Route path="/supabase-test" element={<SupabaseTestPage />} />
               <Route path="/history" element={<HistoryPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/documents" element={<DocumentsPage />} />

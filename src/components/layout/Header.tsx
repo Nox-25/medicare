@@ -27,6 +27,7 @@ const Header = () => {
     ? [
         { href: "/dashboard", label: "Home" },
         { href: "/appointments", label: "Appointments" },
+        { href: "/disease-analysis", label: "Disease Analysis" },
         { href: "/history", label: "History" },
         { href: "/profile", label: "Profile" },
         { href: "/documents", label: "Documents" },
@@ -109,7 +110,7 @@ const Header = () => {
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
                     <AvatarImage src="/placeholder-avatar.jpg" alt="User" />
-                    <AvatarFallback>DR</AvatarFallback>
+                    <AvatarFallback>{user?.name?.charAt(0) || 'U'}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>

@@ -1,6 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { fallbackAuth, type FallbackUser } from "@/lib/fallbackAuth";
+import { supabaseAuth, type SupabaseUser } from "@/lib/supabaseAuth";
 
 type User = {
+  uid: string;
   email: string;
   name: string;
   role: "admin" | "doctor" | "patient" | "hospital";
@@ -10,74 +13,173 @@ type AuthContextType = {
   user: User | null;
   login: (email: string, password: string) => Promise<{ success: true; user: User } | { success: false; error: string }>;
   logout: () => void;
+  updateProfile: (data: Partial<User>) => Promise<{ success: boolean; error?: string }>;
+  authProvider: 'supabase' | 'fallback';
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const STORAGE_KEY = "medease_user";
-const USERS_KEY = "medease_users";
-
-// Demo credential store; replace with real API integration when available
-const DEFAULT_USERS: Record<string, { password: string; name: string; role: User["role"] }> = {
-  "admin@medease.com": { password: "Admin@123", name: "System Administrator", role: "admin" },
-  // Demo doctors (password demo@123; name as username)
-  "dr.alex@medease.com": { password: "demo@123", name: "DrAlex", role: "doctor" },
-  "dr.khan@medease.com": { password: "demo@123", name: "DrKhan", role: "doctor" },
-  // Demo hospitals (password demo@123; name as username)
-  "cityhospital@medease.com": { password: "demo@123", name: "CityHospital", role: "hospital" },
-  "greenclinic@medease.com": { password: "demo@123", name: "GreenClinic", role: "hospital" },
-  // Demo patient
-  "patient@medease.com": { password: "Patient@123", name: "John Carter", role: "patient" },
-};
-
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [authProvider, setAuthProvider] = useState<'supabase' | 'fallback'>('supabase');
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as User;
-        setUser(parsed);
+    // Try Supabase first, then fallback
+    const initializeAuth = async () => {
+      try {
+        // Try Supabase auth first
+        const supabaseUser = await supabaseAuth.getCurrentUser();
+        if (supabaseUser) {
+          const userData: User = {
+            uid: supabaseUser.id,
+            email: supabaseUser.email,
+            name: supabaseUser.name,
+            role: supabaseUser.role
+          };
+          setUser(userData);
+          setAuthProvider('supabase');
+          setLoading(false);
+          
+          // Set up Supabase auth state listener
+          const { data: { subscription } } = supabaseAuth.onAuthStateChange((user: SupabaseUser | null) => {
+            if (user) {
+              const userData: User = {
+                uid: user.id,
+                email: user.email,
+                name: user.name,
+                role: user.role
+              };
+              setUser(userData);
+            } else {
+              setUser(null);
+            }
+          });
+          
+          return () => subscription.unsubscribe();
+        }
+        
+        // If no Supabase user, check fallback auth
+        const fallbackUser = fallbackAuth.getCurrentUser();
+        if (fallbackUser) {
+          setUser(fallbackUser);
+          setAuthProvider('fallback');
+        } else {
+          setUser(null);
+        }
+        setLoading(false);
+        return () => {}; // Empty unsubscribe function
+      } catch (error) {
+        console.warn('Supabase auth failed, using fallback:', error);
+        // Use fallback auth
+        const fallbackUser = fallbackAuth.getCurrentUser();
+        if (fallbackUser) {
+          setUser(fallbackUser);
+          setAuthProvider('fallback');
+        }
+        setLoading(false);
+        return () => {}; // Empty unsubscribe function
       }
-    } catch {
-      // ignore
-    }
+    };
+
+    const unsubscribe = initializeAuth();
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const lower = email.toLowerCase();
-    // Load user registry
-    let registry: Array<{ email: string; password: string; name: string; role: User["role"] }> = [];
     try {
-      const raw = localStorage.getItem(USERS_KEY);
-      if (raw) registry = JSON.parse(raw);
-    } catch {
-      // ignore parse errors
+      // Try Supabase authentication first
+      const supabaseResult = await supabaseAuth.signIn(email, password);
+      if (supabaseResult.user && !supabaseResult.error) {
+        const userData: User = {
+          uid: supabaseResult.user.id,
+          email: supabaseResult.user.email,
+          name: supabaseResult.user.name,
+          role: supabaseResult.user.role
+        };
+        setUser(userData);
+        setAuthProvider('supabase');
+        return { success: true as const, user: userData };
+      }
+
+      // Fallback to local auth
+      const fallbackResult = await fallbackAuth.signIn(email, password);
+      if (fallbackResult.success && fallbackResult.user) {
+        setUser(fallbackResult.user);
+        setAuthProvider('fallback');
+        return { success: true as const, user: fallbackResult.user };
+      }
+
+      return { success: false as const, error: "Login failed with all authentication methods" };
+    } catch (error: any) {
+      console.error('Login error:', error);
+      return { success: false as const, error: error.message || "Login failed" };
     }
-
-    // Merge with defaults (defaults cannot be overwritten by registry)
-    const mergedMap = new Map<string, { password: string; name: string; role: User["role"] }>();
-    Object.entries(DEFAULT_USERS).forEach(([k, v]) => mergedMap.set(k, v));
-    registry.forEach((u) => mergedMap.set(u.email.toLowerCase(), { password: u.password, name: u.name, role: u.role }));
-
-    const record = mergedMap.get(lower);
-    if (!record || record.password !== password) {
-      return { success: false as const, error: "Invalid credentials" };
-    }
-
-    const signedInUser: User = { email: lower, name: record.name, role: record.role };
-    setUser(signedInUser);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(signedInUser));
-    return { success: true as const, user: signedInUser };
   }, []);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY);
-    setUser(null);
-  }, []);
+  const logout = useCallback(async () => {
+    try {
+      if (authProvider === 'supabase') {
+        await supabaseAuth.signOut();
+      } else {
+        await fallbackAuth.signOut();
+      }
+      setUser(null);
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Force logout even if there's an error
+      setUser(null);
+    }
+  }, [authProvider]);
 
-  const value = useMemo<AuthContextType>(() => ({ user, login, logout }), [login, logout, user]);
+  const updateProfile = useCallback(async (data: Partial<User>) => {
+    if (!user) return { success: false, error: "No user logged in" };
+    
+    try {
+      if (authProvider === 'supabase') {
+        const result = await supabaseAuth.updateProfile(user.uid, data);
+        if (result.user && !result.error) {
+          const userData: User = {
+            uid: result.user.id,
+            email: result.user.email,
+            name: result.user.name,
+            role: result.user.role
+          };
+          setUser(userData);
+          return { success: true };
+        } else {
+          return { success: false, error: result.error || "Update failed" };
+        }
+      } else {
+        // For fallback auth, just update local state
+        setUser(prev => prev ? { ...prev, ...data } : null);
+        return { success: true };
+      }
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  }, [user, authProvider]);
+
+  const value = useMemo<AuthContextType>(() => ({ 
+    user, 
+    login, 
+    logout, 
+    updateProfile,
+    authProvider
+  }), [login, logout, updateProfile, user, authProvider]);
+
+  // Show loading spinner while checking auth state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

@@ -3,12 +3,13 @@ import PatientOverview from "@/components/dashboard/PatientOverview";
 import AppointmentsOverview from "@/components/dashboard/AppointmentsOverview";
 import PatientVisits from "@/components/dashboard/PatientVisits";
 import QuickStats from "@/components/dashboard/QuickStats";
+import SupabaseTest from "@/components/SupabaseTest";
 import { useAuth } from "@/auth/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useMemo } from "react";
-import { Phone, User, CalendarCheck2, FileText, Stethoscope, Clock, Download, AlertTriangle, UploadCloud, Settings2, MessageSquare } from "lucide-react";
+import { Phone, User, CalendarCheck2, FileText, Stethoscope, Clock, Download, AlertTriangle, UploadCloud, Settings2, MessageSquare, Database } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
@@ -162,9 +163,11 @@ const Dashboard = () => {
           <CardContent className="p-6 space-y-3">
             <div className="text-lg font-semibold">Quick Actions</div>
             <Button className="w-full bg-gradient-primary" onClick={() => navigate("/appointments")}><CalendarCheck2 className="mr-2 h-4 w-4" /> Book New Appointment</Button>
+            <Button variant="outline" className="w-full" onClick={() => navigate("/disease-analysis")}><Stethoscope className="mr-2 h-4 w-4" /> Disease Analysis</Button>
             <Button variant="outline" className="w-full" onClick={() => navigate("/profile")}><Settings2 className="mr-2 h-4 w-4" /> Update Personal Info</Button>
             <Button variant="outline" className="w-full" onClick={() => navigate("/documents")}><UploadCloud className="mr-2 h-4 w-4" /> Upload Medical Documents</Button>
             <Button variant="outline" className="w-full" onClick={() => navigate("/contact")}><MessageSquare className="mr-2 h-4 w-4" /> Contact Doctor</Button>
+            <Button variant="outline" className="w-full" onClick={() => navigate("/supabase-test")}><Database className="mr-2 h-4 w-4" /> Test Supabase</Button>
           </CardContent>
         </Card>
 

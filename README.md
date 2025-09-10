@@ -1,73 +1,163 @@
-# Welcome to your Lovable project
+# 🏥 MedEase - Healthcare Management System
 
-## Project info
+A modern healthcare management application built with React, TypeScript, and Supabase, hosted on Firebase.
 
-**URL**: https://lovable.dev/projects/d9b5da81-58f9-489f-8204-f7d4e61b2c56
+## 🚀 **Architecture**
 
-## How can I edit this code?
+- **Frontend**: React + TypeScript + Vite + Tailwind CSS + shadcn/ui
+- **Backend**: Supabase (Authentication + Database)
+- **Hosting**: Firebase Hosting
+- **Authentication**: Supabase Auth with fallback to local storage
 
-There are several ways of editing your application.
+## 📋 **Features**
 
-**Use Lovable**
+- **User Management**: Patient, Doctor, Admin, Hospital roles
+- **Authentication**: Secure login/signup with Supabase
+- **Appointments**: Schedule and manage medical appointments
+- **Medical History**: Track patient medical records
+- **Document Management**: Upload and manage medical documents
+- **Dashboard**: Role-based dashboards for different user types
+- **Responsive Design**: Mobile-first responsive UI
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/d9b5da81-58f9-489f-8204-f7d4e61b2c56) and start prompting.
+## 🛠️ **Quick Start**
 
-Changes made via Lovable will be committed automatically to this repo.
+### Prerequisites
+- Node.js (v18 or higher)
+- npm or yarn
+- Firebase CLI (for deployment)
 
-**Use your preferred IDE**
+### Installation
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+```bash
+# Clone the repository
 git clone <YOUR_GIT_URL>
+cd vitalmanage-grid-main
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Install dependencies
+npm install
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Development
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+# Development server
+npm run dev
 
-**Use GitHub Codespaces**
+# Build for production
+npm run build
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+# Preview production build
+npm run preview
 
-## What technologies are used for this project?
+# Lint code
+npm run lint
+```
 
-This project is built with:
+## 🚀 **Deployment**
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Firebase Hosting
 
-## How can I deploy this project?
+```bash
+# Install Firebase CLI globally
+npm install -g firebase-tools
 
-Simply open [Lovable](https://lovable.dev/projects/d9b5da81-58f9-489f-8204-f7d4e61b2c56) and click on Share -> Publish.
+# Login to Firebase
+firebase login
 
-## Can I connect a custom domain to my Lovable project?
+# Build and deploy
+npm run deploy
 
-Yes, you can!
+# Or deploy only hosting
+npm run deploy:hosting
+```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Manual Deployment
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+```bash
+# Build the project
+npm run build
+
+# Deploy to Firebase
+firebase deploy --only hosting
+```
+
+## 📁 **Project Structure**
+
+```
+src/
+├── auth/                 # Authentication context and components
+├── components/           # Reusable UI components
+│   ├── dashboard/       # Dashboard-specific components
+│   ├── layout/          # Layout components
+│   └── ui/              # shadcn/ui components
+├── hooks/               # Custom React hooks
+├── lib/                 # Utility libraries
+│   ├── supabase.ts      # Supabase client configuration
+│   ├── supabaseAuth.ts  # Supabase authentication
+│   ├── supabaseServices.ts # Supabase database services
+│   └── utils.ts         # Utility functions
+├── pages/               # Page components
+└── assets/              # Static assets
+```
+
+## 🔧 **Configuration**
+
+### Supabase Setup
+The Supabase configuration is already set up in `src/lib/supabase.ts`:
+- **URL**: `https://cjcptchnnqrijqfofoju.supabase.co`
+- **Anon Key**: Already configured
+
+### Firebase Hosting
+Configuration is in `firebase.json`:
+- **Public Directory**: `dist`
+- **SPA Routing**: Enabled
+- **Caching**: Optimized for static assets
+
+## 📚 **Documentation**
+
+- [Firebase Hosting Setup](FIREBASE_HOSTING_SETUP.md)
+- [Supabase Setup Guide](SUPABASE_SETUP_GUIDE.md)
+
+## 🎯 **Available Scripts**
+
+```bash
+npm run dev              # Start development server
+npm run build            # Build for production
+npm run preview          # Preview production build
+npm run lint             # Run ESLint
+npm run deploy           # Build and deploy to Firebase
+npm run deploy:hosting   # Deploy only hosting
+npm run serve            # Serve locally with Firebase emulator
+```
+
+## 🔒 **Security**
+
+- **Authentication**: Supabase Auth with JWT tokens
+- **Database**: Row Level Security (RLS) enabled
+- **Hosting**: HTTPS enforced with security headers
+- **API**: Secure API endpoints with proper validation
+
+## 🌐 **Live Demo**
+
+After deployment, your app will be available at:
+- **Production**: `https://your-project-id.web.app`
+- **Preview**: `https://your-project-id.firebaseapp.com`
+
+## 🤝 **Contributing**
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## 📄 **License**
+
+This project is licensed under the MIT License.
+
+---
+
+**Built with ❤️ using React, TypeScript, Supabase, and Firebase Hosting**

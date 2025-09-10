@@ -1,7 +1,18 @@
 import Header from "@/components/layout/Header";
 import { useAuth } from "@/auth/AuthContext";
-import { readAppointments, addAppointment, generateId, readUsers, upsertUser, addNotification, readDocuments, addDocument, readHistory, addHistory } from "@/lib/utils";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { 
+  readUsers, 
+  readAppointments, 
+  addAppointment, 
+  addNotification, 
+  readDocuments, 
+  addDocument, 
+  readHistory, 
+  addHistory, 
+  upsertUser, 
+  generateId 
+} from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";

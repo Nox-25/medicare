@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Stethoscope, User, Mail, Lock, Phone, UserCheck, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/auth/AuthContext";
+import { fallbackAuth } from "@/lib/fallbackAuth";
+import { supabaseAuth } from "@/lib/supabaseAuth";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -31,7 +33,7 @@ const Signup = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Basic validation
@@ -53,49 +55,65 @@ const Signup = () => {
       return;
     }
 
-    // Persist new user to registry for authentication
-    const usersKey = "medease_users";
-    const newUser = {
-      email: formData.email.toLowerCase(),
-      password: formData.password,
-      name: `${formData.firstName} ${formData.lastName}`.trim(),
-      role: (formData.role as "admin" | "doctor" | "patient") || "patient",
-      phone: formData.phone,
-      dateOfBirth: formData.dateOfBirth,
-      gender: formData.gender,
-      bloodGroup: formData.bloodGroup,
-    };
-
-    try {
-      const raw = localStorage.getItem(usersKey);
-      const list: Array<typeof newUser> = raw ? JSON.parse(raw) : [];
-      const exists = list.some((u) => u.email === newUser.email);
-      if (exists) {
-        toast({
-          title: "Account already exists",
-          description: "Please sign in with your credentials.",
-        });
-      } else {
-        list.push(newUser);
-        localStorage.setItem(usersKey, JSON.stringify(list));
-        toast({
-          title: "Account Created Successfully!",
-          description: "You can now sign in with your email and password.",
-        });
-      }
-    } catch {
+    if (formData.password.length < 6) {
       toast({
-        title: "Unexpected error",
-        description: "Could not store account locally. Please try again.",
+        title: "Password Too Short",
+        description: "Password must be at least 6 characters long.",
         variant: "destructive",
       });
       return;
     }
 
-    // Redirect to login
-    setTimeout(() => {
-      navigate("/login");
-    }, 800);
+    try {
+      const fullName = `${formData.firstName} ${formData.lastName}`.trim();
+      
+      // Try Supabase first, then fallback
+      let result;
+      
+      // Try Supabase
+      const supabaseResult = await supabaseAuth.signUp(
+        formData.email.toLowerCase(),
+        formData.password,
+        fullName,
+        formData.role
+      );
+      
+      if (supabaseResult.user && !supabaseResult.error) {
+        result = { success: true, user: supabaseResult.user };
+      } else {
+        // Use fallback authentication
+        result = await fallbackAuth.createUser(
+          formData.email.toLowerCase(),
+          formData.password,
+          fullName,
+          formData.role
+        );
+      }
+
+      if (result.success) {
+        toast({
+          title: "Account Created Successfully!",
+          description: "Welcome to MedEase! You can now sign in.",
+        });
+        
+        // Redirect to login after successful signup
+        setTimeout(() => {
+          navigate("/login");
+        }, 1500);
+      } else {
+        toast({
+          title: "Signup Failed",
+          description: result.error || "Could not create account. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Unexpected Error",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

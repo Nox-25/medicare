@@ -20,10 +20,10 @@ const Login = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password || !role) {
+    if (!email || !password) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all fields to continue.",
+        description: "Please fill in email and password to continue.",
         variant: "destructive",
       });
       return;
@@ -97,11 +97,11 @@ const Login = () => {
             <div className="space-y-2">
               <Label htmlFor="role" className="flex items-center gap-2">
                 <UserCheck className="h-4 w-4" />
-                Login As
+                Login As (Optional)
               </Label>
               <Select value={role} onValueChange={setRole}>
                 <SelectTrigger className="transition-medical">
-                  <SelectValue placeholder="Select your role" />
+                  <SelectValue placeholder="Role will be auto-detected" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="patient">Patient</SelectItem>
@@ -109,6 +109,9 @@ const Login = () => {
                   <SelectItem value="admin">Administrator</SelectItem>
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground">
+                Your role will be automatically detected from your account
+              </p>
             </div>
 
             <Button 
@@ -124,6 +127,13 @@ const Login = () => {
                 <Link to="/signup" className="text-primary hover:underline font-medium">
                   Sign up here
                 </Link>
+              </div>
+              
+              <div className="text-xs text-muted-foreground border-t pt-2">
+                <p className="font-medium mb-1">Demo Credentials:</p>
+                <p>Admin: admin@medease.com / Admin@123</p>
+                <p>Doctor: dr.smith@medease.com / Doctor@123</p>
+                <p>Patient: patient@medease.com / Patient@123</p>
               </div>
             </div>
           </form>
